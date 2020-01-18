@@ -4,7 +4,7 @@
 
 ### Disclaimer
 
-Given solidity code is version 2.0 of MiniMeToken. But same Exploit 
+Given solidity code is version 0.2.0 of MiniMeToken. But same Overflow is available on other versions.
 
 ### Background
 
