@@ -32,6 +32,7 @@ describe('MiniMeToken', () => {
       decimals,
       symbol,
       transferEnabled,
+      constants.ZERO_ADDRESS,
       {from:controller}
     );
   });
