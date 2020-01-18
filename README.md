@@ -1,12 +1,10 @@
-nimeToken Overflow
+# MinimeToken Overflow
 
 ## MinimeToken
 
 [https://github.com/Giveth/minime/blob/master/contracts/MiniMeToken.sol](https://github.com/Giveth/minime/blob/master/contracts/MiniMeToken.sol)
 
 ### Disclaimer
-
-Given solidity code is version 0.2.0 of MiniMeToken. But same overflow is available for other  versions.
 
 ### Background
 
