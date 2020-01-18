@@ -11,7 +11,7 @@ const {
 const {expect} =require('chai');
 const {accounts, contract } = require('@openzeppelin/test-environment');
 
-const MiniMeTokenArtifacts = contract.fromArtifact('MiniMeTokenMock');
+const MiniMeTokenArtifacts = contract.fromArtifact('MiniMeToken');
 
 describe('MiniMeToken', () => {
   const [controller, sender, spender, recipient, ...others] = accounts;
