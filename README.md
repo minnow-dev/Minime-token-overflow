@@ -123,3 +123,46 @@ function doTransfer(address _from, address _to, uint _amount) internal {
 }
 ```
 as same as `generateToken()`, `doTransfer()` uses `updateAtNow()`, it can also cause overflow.
+
+
+## Affected Products
+
+All smart contracts using minime token is affected.
+List below is all we could find using online search.
+We'll update when we find more.
+If you know other contract that uses minimetoken, leave issue on github.
+Each codes can be found on `${project}/audit` branch. 
+
+| project | addrees |
+|-------|------|
+| Aigang | 0x1063ce524265d5a3A624f4914acd573dD89ce988 |
+| ANT | 0x960b236A07cf122663c4303350609A66A7B288C0 | 
+| Aston X | 0x1a0f2ab46ec630f9fd638029027b552afa64b94c | 
+| BlankDAO | 0x18df60ddaeba4393e5cc6ecfc1e5bb1d20dd6239 | 
+| bloom | 0x107c4504cd79c5d2696ea0030a8dd4e92601b82e | 
+| BrightID Voting | 0x8a071DC5BA9d2eE0e825179E236D8751F057b21B | 
+| Cindicator | 0x9e88613418cf03dca54d6a2cf6ad934a78c7a17a | 
+| Citizen Game | 0xafc13f758c02b38caa0e69a9734b0e3b5957dbe8 | 
+| DaoCON | 0x2a39edf5f4a3e32272a3189e8f19acc3e370b4a1 | 
+| DataBroker DAO | 0x1b5f21ee98eed48d292e8e2d3ed82b40a9728a22 | 
+| Data eXchange Token | 0x765f0c16d1ddc279295c1a7c24b0883f62d33f75 | 
+| district0x | 0x0abdace70d3790235af448c88547603b945604ea | 
+| Donut | 0xC0F9bD5Fa5698B6505F643900FFA515Ea5dF54A9 | 
+| ESCB token(ESCB) | 0x5e365a320779acc2c72f5dcd2ba8a81e4a34569f | 
+| ETHbits | 0x1b9743f556d65e757c4c650b4555baf354cb8bd3 | 
+| Ethfinex Nectar Token | 0xcc80c051057b774cd75067dc48f8987c4eb97a5e | 
+| Fiinu | 0x0e73754a21442d1bd8f945669ac4aae0cd2b0934 | 
+| FundRequest | 0x4df47b4969b2911c966506e3592c41389493953b | 
+| fuze x | 0x1829aa045e21e0d59580024a951db48096e01782 | 
+| giveth | 0xb94c53b0e67fabac3d97173482663ef597d4174a | 
+| kleros | 0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d | 
+| Lightwave | 0x6bfB46B3fE39Aa6762a925277e846Ab8422F469C | 
+| Mothership | 0x68AA3F232dA9bdC2343465545794ef3eEa5209BD | 
+| Oroshi | 0xc9c0ff6344b4bfdee7ace21c4deddd6e43ecb454 | 
+| REAL | 0x9214ec02cb71cba0ada6896b8da260736a67ab10 | 
+| Realisto | 0x767ba2915ec344015a7938e3eedfec2785195d05 | 
+| Sharpe Platform Token | 0xef2463099360a085f1f10b076ed72ef625497a06 | 
+| SNT | 0x744d70fdbe2ba4cf95131626614a1763df805b9e | 
+| sphi(Delphi) | 0x3dff304e4e290787572cb15960ca160e85f2292b | 
+| SWT | 0xb9e7f8568e08d5659f5d29c4997173d84cdf2607 | 
+| Unartig | 0x2cbf3b1872dd351f01dd009eb3e813f5be649a5f |
