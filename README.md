@@ -141,7 +141,7 @@ Each codes can be found on `${project}/audit` branch.
 | BlankDAO | 0x18df60ddaeba4393e5cc6ecfc1e5bb1d20dd6239 | 
 | bloom | 0x107c4504cd79c5d2696ea0030a8dd4e92601b82e | 
 | BrightID Voting | 0x8a071DC5BA9d2eE0e825179E236D8751F057b21B | 
-| Cindicator | 0x9e88613418cf03dca54d6a2cf6ad934a78c7a17a | 
+| Cindicator | 0xd4c435f5b09f855c3317c8524cb1f586e42795fa |
 | Citizen Game | 0xafc13f758c02b38caa0e69a9734b0e3b5957dbe8 | 
 | DaoCON | 0x2a39edf5f4a3e32272a3189e8f19acc3e370b4a1 | 
 | DataBroker DAO | 0x1b5f21ee98eed48d292e8e2d3ed82b40a9728a22 | 
@@ -164,5 +164,6 @@ Each codes can be found on `${project}/audit` branch.
 | Sharpe Platform Token | 0xef2463099360a085f1f10b076ed72ef625497a06 | 
 | SNT | 0x744d70fdbe2ba4cf95131626614a1763df805b9e | 
 | sphi(Delphi) | 0x3dff304e4e290787572cb15960ca160e85f2292b | 
-| SWT | 0xb9e7f8568e08d5659f5d29c4997173d84cdf2607 | 
+| SWT | 0xb9e7f8568e08d5659f5d29c4997173d84cdf2607 |
+| SWM | 0x9e88613418cf03dca54d6a2cf6ad934a78c7a17a | 
 | Unartig | 0x2cbf3b1872dd351f01dd009eb3e813f5be649a5f |
