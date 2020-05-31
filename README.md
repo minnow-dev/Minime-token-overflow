@@ -167,3 +167,5 @@ Each codes can be found on `${project}/audit` branch.
 | SWT | 0xb9e7f8568e08d5659f5d29c4997173d84cdf2607 |
 | SWM | 0x9e88613418cf03dca54d6a2cf6ad934a78c7a17a | 
 | Unartig | 0x2cbf3b1872dd351f01dd009eb3e813f5be649a5f |
+| Genaro X (not yet tested) | 0x6ec8a24cabdc339a06a172f8223ea557055adaa5 |
+| PATO (not yet tested) | 0x4a128BeB9892142F131A6b3De4B31067C357A6d7|
