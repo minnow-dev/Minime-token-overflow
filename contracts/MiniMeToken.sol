@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 /*
     Copyright 2016, Jordi Baylina
@@ -28,8 +28,18 @@ pragma solidity ^0.4.18;
 import "./Controlled.sol";
 import "./TokenController.sol";
 
+/**
+ *Submitted for verification at Etherscan.io on 2018-10-28
+*/
+
+
 contract ApproveAndCallFallBack {
-    function receiveApproval(address from, uint256 _amount, address _token, bytes _data) public;
+    function receiveApproval(
+        address from,
+        uint256 _amount,
+        address _token,
+        bytes _data
+    ) public;
 }
 
 /// @dev The actual token contract, the default controller is the msg.sender
@@ -40,13 +50,13 @@ contract MiniMeToken is Controlled {
     string public name;                //The Token's name: e.g. DigixDAO Tokens
     uint8 public decimals;             //Number of decimals of the smallest unit
     string public symbol;              //An identifier: e.g. REP
-    string public version = 'MMT_0.2'; //An arbitrary versioning scheme
+    string public version = "MMT_0.1"; //An arbitrary versioning scheme
 
 
     /// @dev `Checkpoint` is the structure that attaches a block number to a
     ///  given value, the block number attached is the one that last changed the
     ///  value
-    struct  Checkpoint {
+    struct Checkpoint {
 
         // `fromBlock` is the block number that the value was generated from
         uint128 fromBlock;
@@ -101,19 +111,20 @@ contract MiniMeToken is Controlled {
     /// @param _tokenSymbol Token Symbol for the new token
     /// @param _transfersEnabled If true, tokens will be able to be transferred
     function MiniMeToken(
-        address _tokenFactory,
-        address _parentToken,
+        MiniMeTokenFactory _tokenFactory,
+        MiniMeToken _parentToken,
         uint _parentSnapShotBlock,
         string _tokenName,
         uint8 _decimalUnits,
         string _tokenSymbol,
         bool _transfersEnabled
-    ) public {
-        tokenFactory = MiniMeTokenFactory(_tokenFactory);
+    )  public
+    {
+        tokenFactory = _tokenFactory;
         name = _tokenName;                                 // Set the name
         decimals = _decimalUnits;                          // Set the decimals
         symbol = _tokenSymbol;                             // Set the symbol
-        parentToken = MiniMeToken(_parentToken);
+        parentToken = _parentToken;
         parentSnapShotBlock = _parentSnapShotBlock;
         transfersEnabled = _transfersEnabled;
         creationBlock = block.number;
@@ -130,8 +141,7 @@ contract MiniMeToken is Controlled {
     /// @return Whether the transfer was successful or not
     function transfer(address _to, uint256 _amount) public returns (bool success) {
         require(transfersEnabled);
-        doTransfer(msg.sender, _to, _amount);
-        return true;
+        return doTransfer(msg.sender, _to, _amount);
     }
 
     /// @notice Send `_amount` tokens to `_to` from `_from` on the condition it
@@ -140,8 +150,7 @@ contract MiniMeToken is Controlled {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function transferFrom(address _from, address _to, uint256 _amount
-    ) public returns (bool success) {
+    function transferFrom(address _from, address _to, uint256 _amount) public returns (bool success) {
 
         // The controller of this contract can move tokens around at will,
         //  this is important to recognize! Confirm that you trust the
@@ -151,11 +160,11 @@ contract MiniMeToken is Controlled {
             require(transfersEnabled);
 
             // The standard ERC 20 transferFrom functionality
-            require(allowed[_from][msg.sender] >= _amount);
+            if (allowed[_from][msg.sender] < _amount)
+                return false;
             allowed[_from][msg.sender] -= _amount;
         }
-        doTransfer(_from, _to, _amount);
-        return true;
+        return doTransfer(_from, _to, _amount);
     }
 
     /// @dev This is the actual transfer function in the token contract, it can
@@ -164,43 +173,35 @@ contract MiniMeToken is Controlled {
     /// @param _to The address of the recipient
     /// @param _amount The amount of tokens to be transferred
     /// @return True if the transfer was successful
-    function doTransfer(address _from, address _to, uint _amount
-    ) internal {
-
-           if (_amount == 0) {
-               Transfer(_from, _to, _amount);    // Follow the spec to louch the event when transfer 0
-               return;
-           }
-
-           require(parentSnapShotBlock < block.number);
-
-           // Do not allow transfer to 0x0 or the token contract itself
-           require((_to != 0) && (_to != address(this)));
-
-           // If the amount being transfered is more than the balance of the
-           //  account the transfer throws
-           var previousBalanceFrom = balanceOfAt(_from, block.number);
-
-           require(previousBalanceFrom >= _amount);
-
-           // Alerts the token controller of the transfer
-           if (isContract(controller)) {
-               require(TokenController(controller).onTransfer(_from, _to, _amount));
-           }
-
-           // First update the balance array with the new value for the address
-           //  sending the tokens
-           updateValueAtNow(balances[_from], previousBalanceFrom - _amount);
-
-           // Then update the balance array with the new value for the address
-           //  receiving the tokens
-           var previousBalanceTo = balanceOfAt(_to, block.number);
-           require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
-           updateValueAtNow(balances[_to], previousBalanceTo + _amount);
-
-           // An event to make the transfer easy to find on the blockchain
-           Transfer(_from, _to, _amount);
-
+    function doTransfer(address _from, address _to, uint _amount) internal returns(bool) {
+        if (_amount == 0) {
+            return true;
+        }
+        require(parentSnapShotBlock < block.number);
+        // Do not allow transfer to 0x0 or the token contract itself
+        require((_to != 0) && (_to != address(this)));
+        // If the amount being transfered is more than the balance of the
+        //  account the transfer returns false
+        var previousBalanceFrom = balanceOfAt(_from, block.number);
+        if (previousBalanceFrom < _amount) {
+            return false;
+        }
+        // Alerts the token controller of the transfer
+        if (isContract(controller)) {
+            // Adding the ` == true` makes the linter shut up so...
+            require(ITokenController(controller).onTransfer(_from, _to, _amount) == true);
+        }
+        // First update the balance array with the new value for the address
+        //  sending the tokens
+        updateValueAtNow(balances[_from], previousBalanceFrom - _amount);
+        // Then update the balance array with the new value for the address
+        //  receiving the tokens
+        var previousBalanceTo = balanceOfAt(_to, block.number);
+        require(previousBalanceTo + _amount >= previousBalanceTo); // Check for overflow
+        updateValueAtNow(balances[_to], previousBalanceTo + _amount);
+        // An event to make the transfer easy to find on the blockchain
+        Transfer(_from, _to, _amount);
+        return true;
     }
 
     /// @param _owner The address that's balance is being requested
@@ -226,7 +227,8 @@ contract MiniMeToken is Controlled {
 
         // Alerts the token controller of the approve function call
         if (isContract(controller)) {
-            require(TokenController(controller).onApprove(msg.sender, _spender, _amount));
+            // Adding the ` == true` makes the linter shut up so...
+            require(ITokenController(controller).onApprove(msg.sender, _spender, _amount) == true);
         }
 
         allowed[msg.sender][_spender] = _amount;
@@ -239,8 +241,7 @@ contract MiniMeToken is Controlled {
     /// @param _spender The address of the account able to transfer the tokens
     /// @return Amount of remaining tokens of _owner that _spender is allowed
     ///  to spend
-    function allowance(address _owner, address _spender
-    ) public constant returns (uint256 remaining) {
+    function allowance(address _owner, address _spender) public constant returns (uint256 remaining) {
         return allowed[_owner][_spender];
     }
 
@@ -251,11 +252,10 @@ contract MiniMeToken is Controlled {
     /// @param _spender The address of the contract able to transfer the tokens
     /// @param _amount The amount of tokens to be approved for transfer
     /// @return True if the function call was successful
-    function approveAndCall(address _spender, uint256 _amount, bytes _extraData
-    ) public returns (bool success) {
+    function approveAndCall(ApproveAndCallFallBack _spender, uint256 _amount, bytes _extraData) public returns (bool success) {
         require(approve(_spender, _amount));
 
-        ApproveAndCallFallBack(_spender).receiveApproval(
+        _spender.receiveApproval(
             msg.sender,
             _amount,
             this,
@@ -280,16 +280,14 @@ contract MiniMeToken is Controlled {
     /// @param _owner The address from which the balance will be retrieved
     /// @param _blockNumber The block number when the balance is queried
     /// @return The balance at `_blockNumber`
-    function balanceOfAt(address _owner, uint _blockNumber) public constant
-        returns (uint) {
+    function balanceOfAt(address _owner, uint _blockNumber) public constant returns (uint) {
 
         // These next few lines are used when the balance of the token is
         //  requested before a check point was ever created for this token, it
         //  requires that the `parentToken.balanceOfAt` be queried at the
         //  genesis block for that token as this contains initial balance of
         //  this token
-        if ((balances[_owner].length == 0)
-            || (balances[_owner][0].fromBlock > _blockNumber)) {
+        if ((balances[_owner].length == 0) || (balances[_owner][0].fromBlock > _blockNumber)) {
             if (address(parentToken) != 0) {
                 return parentToken.balanceOfAt(_owner, min(_blockNumber, parentSnapShotBlock));
             } else {
@@ -313,8 +311,7 @@ contract MiniMeToken is Controlled {
         //  requires that the `parentToken.totalSupplyAt` be queried at the
         //  genesis block for this token as that contains totalSupply of this
         //  token at this block number.
-        if ((totalSupplyHistory.length == 0)
-            || (totalSupplyHistory[0].fromBlock > _blockNumber)) {
+        if ((totalSupplyHistory.length == 0) || (totalSupplyHistory[0].fromBlock > _blockNumber)) {
             if (address(parentToken) != 0) {
                 return parentToken.totalSupplyAt(min(_blockNumber, parentSnapShotBlock));
             } else {
@@ -347,22 +344,24 @@ contract MiniMeToken is Controlled {
         string _cloneTokenSymbol,
         uint _snapshotBlock,
         bool _transfersEnabled
-        ) public returns(address) {
-        if (_snapshotBlock == 0) _snapshotBlock = block.number;
+    ) public returns(MiniMeToken)
+    {
+        uint256 snapshot = _snapshotBlock == 0 ? block.number - 1 : _snapshotBlock;
+
         MiniMeToken cloneToken = tokenFactory.createCloneToken(
             this,
-            _snapshotBlock,
+            snapshot,
             _cloneTokenName,
             _cloneDecimalUnits,
             _cloneTokenSymbol,
             _transfersEnabled
-            );
+        );
 
         cloneToken.changeController(msg.sender);
 
         // An event to make the token easy to find on the blockchain
-        NewCloneToken(address(cloneToken), _snapshotBlock);
-        return address(cloneToken);
+        NewCloneToken(address(cloneToken), snapshot);
+        return cloneToken;
     }
 
 ////////////////
@@ -373,8 +372,7 @@ contract MiniMeToken is Controlled {
     /// @param _owner The address that will be assigned the new tokens
     /// @param _amount The quantity of tokens generated
     /// @return True if the tokens are generated correctly
-    function generateTokens(address _owner, uint _amount
-    ) public onlyController returns (bool) {
+    function generateTokens(address _owner, uint _amount) onlyController public returns (bool) {
         uint curTotalSupply = totalSupply();
         require(curTotalSupply + _amount >= curTotalSupply); // Check for overflow
         uint previousBalanceTo = balanceOf(_owner);
@@ -390,8 +388,7 @@ contract MiniMeToken is Controlled {
     /// @param _owner The address that will lose the tokens
     /// @param _amount The quantity of tokens to burn
     /// @return True if the tokens are burned correctly
-    function destroyTokens(address _owner, uint _amount
-    ) onlyController public returns (bool) {
+    function destroyTokens(address _owner, uint _amount) onlyController public returns (bool) {
         uint curTotalSupply = totalSupply();
         require(curTotalSupply >= _amount);
         uint previousBalanceFrom = balanceOf(_owner);
@@ -409,7 +406,7 @@ contract MiniMeToken is Controlled {
 
     /// @notice Enables token holders to transfer their tokens freely if true
     /// @param _transfersEnabled True if transfers are allowed in the clone
-    function enableTransfers(bool _transfersEnabled) public onlyController {
+    function enableTransfers(bool _transfersEnabled) onlyController public {
         transfersEnabled = _transfersEnabled;
     }
 
@@ -421,20 +418,21 @@ contract MiniMeToken is Controlled {
     /// @param checkpoints The history of values being queried
     /// @param _block The block number to retrieve the value at
     /// @return The number of tokens being queried
-    function getValueAt(Checkpoint[] storage checkpoints, uint _block
-    ) constant internal returns (uint) {
-        if (checkpoints.length == 0) return 0;
+    function getValueAt(Checkpoint[] storage checkpoints, uint _block) constant internal returns (uint) {
+        if (checkpoints.length == 0)
+            return 0;
 
         // Shortcut for the actual value
         if (_block >= checkpoints[checkpoints.length-1].fromBlock)
             return checkpoints[checkpoints.length-1].value;
-        if (_block < checkpoints[0].fromBlock) return 0;
+        if (_block < checkpoints[0].fromBlock)
+            return 0;
 
         // Binary search of the value in the array
         uint min = 0;
         uint max = checkpoints.length-1;
         while (max > min) {
-            uint mid = (max + min + 1)/ 2;
+            uint mid = (max + min + 1) / 2;
             if (checkpoints[mid].fromBlock<=_block) {
                 min = mid;
             } else {
@@ -448,17 +446,15 @@ contract MiniMeToken is Controlled {
     ///  `totalSupplyHistory`
     /// @param checkpoints The history of data being updated
     /// @param _value The new number of tokens
-    function updateValueAtNow(Checkpoint[] storage checkpoints, uint _value
-    ) internal  {
-        if ((checkpoints.length == 0)
-        || (checkpoints[checkpoints.length -1].fromBlock < block.number)) {
-               Checkpoint storage newCheckPoint = checkpoints[ checkpoints.length++ ];
-               newCheckPoint.fromBlock =  uint128(block.number);
-               newCheckPoint.value = uint128(_value);
-           } else {
-               Checkpoint storage oldCheckPoint = checkpoints[checkpoints.length-1];
-               oldCheckPoint.value = uint128(_value);
-           }
+    function updateValueAtNow(Checkpoint[] storage checkpoints, uint _value) internal {
+        if ((checkpoints.length == 0) || (checkpoints[checkpoints.length - 1].fromBlock < block.number)) {
+            Checkpoint storage newCheckPoint = checkpoints[checkpoints.length++];
+            newCheckPoint.fromBlock = uint128(block.number);
+            newCheckPoint.value = uint128(_value);
+        } else {
+            Checkpoint storage oldCheckPoint = checkpoints[checkpoints.length - 1];
+            oldCheckPoint.value = uint128(_value);
+        }
     }
 
     /// @dev Internal function to determine if an address is a contract
@@ -466,10 +462,13 @@ contract MiniMeToken is Controlled {
     /// @return True if `_addr` is a contract
     function isContract(address _addr) constant internal returns(bool) {
         uint size;
-        if (_addr == 0) return false;
+        if (_addr == 0)
+            return false;
+
         assembly {
             size := extcodesize(_addr)
         }
+
         return size>0;
     }
 
@@ -481,9 +480,10 @@ contract MiniMeToken is Controlled {
     /// @notice The fallback function: If the contract's controller has not been
     ///  set to 0, then the `proxyPayment` method is called which relays the
     ///  ether and creates tokens as described in the token controller contract
-    function () public payable {
+    function () external payable {
         require(isContract(controller));
-        require(TokenController(controller).proxyPayment.value(msg.value)(msg.sender));
+        // Adding the ` == true` makes the linter shut up so...
+        require(ITokenController(controller).proxyPayment.value(msg.value)(msg.sender) == true);
     }
 
 //////////
@@ -494,7 +494,7 @@ contract MiniMeToken is Controlled {
     ///  sent tokens to this contract.
     /// @param _token The address of the token contract that you want to recover
     ///  set to 0 in case you want to extract ether.
-    function claimTokens(address _token) public onlyController {
+    function claimTokens(address _token) onlyController public {
         if (_token == 0x0) {
             controller.transfer(this.balance);
             return;
@@ -541,13 +541,14 @@ contract MiniMeTokenFactory {
     /// @param _transfersEnabled If true, tokens will be able to be transferred
     /// @return The address of the new token contract
     function createCloneToken(
-        address _parentToken,
+        MiniMeToken _parentToken,
         uint _snapshotBlock,
         string _tokenName,
         uint8 _decimalUnits,
         string _tokenSymbol,
         bool _transfersEnabled
-    ) public returns (MiniMeToken) {
+    ) public returns (MiniMeToken)
+    {
         MiniMeToken newToken = new MiniMeToken(
             this,
             _parentToken,
@@ -556,7 +557,7 @@ contract MiniMeTokenFactory {
             _decimalUnits,
             _tokenSymbol,
             _transfersEnabled
-            );
+        );
 
         newToken.changeController(msg.sender);
         return newToken;
